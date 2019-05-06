@@ -19,6 +19,9 @@ const stdio = ['ignore', 'pipe', 'pipe'];
 const wrConfig = {};
 const pluginDir = 'plugins';
 
+const username = os.userInfo().username;
+
+
 switch (process.platform) {
   case 'win32':
     pluginName = 'pepflashplayer.dll';
@@ -151,7 +154,6 @@ function createWindow() {
 
 function starWebrecorder() {
   const dataPath = path.join(app.getPath('downloads'), 'Webrecorder-Data');
-  const username = os.userInfo().username;
   let cmdline = [
     '--no-browser',
     '--loglevel',
@@ -265,15 +267,32 @@ app.on('ready', async () => {
   process.env.INTERNAL_PORT = port;
   process.env.ALLOW_DAT = true;
 
-  const proxy = `localhost:${port}`;
-  const sesh = session.fromPartition('persist:wr', { cache: true });
-  sesh.setProxy({ proxyRules: proxy }, () => {
-    createWindow();
-  });
+  const sesh = session.fromPartition('persist:' +  username, { cache: false });
+  createWindow();
+  //const proxy = `localhost:${port}`;
+  //sesh.setProxy({ proxyRules: proxy }, () => {
+  //});
 });
 
 
 // renderer process communication
+ipcMain.on('toggle-proxy', (evt, arg) => {
+  const sesh = session.fromPartition('persist:' +  username, { cache: false });
+
+  let rules;
+
+  if (arg) {
+    rules = { proxyRules: `localhost:${process.env.INTERNAL_PORT}` };
+  } else {
+    rules = {};
+  }
+
+  sesh.setProxy(rules, () => {
+    console.log('proxy set:', rules);
+    evt.sender.send('toggle-proxy-done', {});
+  });
+});
+
 ipcMain.on('async-call', (evt, arg) => {
   evt.sender.send('async-response', {
     config: wrConfig,
