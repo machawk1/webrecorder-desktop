@@ -267,11 +267,11 @@ app.on('ready', async () => {
   process.env.INTERNAL_PORT = port;
   process.env.ALLOW_DAT = true;
 
-  const sesh = session.fromPartition('persist:' +  username, { cache: false });
-  createWindow();
-  //const proxy = `localhost:${port}`;
-  //sesh.setProxy({ proxyRules: proxy }, () => {
-  //});
+  const sesh = session.fromPartition('persist:' + username + '-replay', { cache: true });
+  const proxy = `localhost:${port}`;
+  sesh.setProxy({ proxyRules: proxy }, () => {
+    createWindow();
+  });
 });
 
 
