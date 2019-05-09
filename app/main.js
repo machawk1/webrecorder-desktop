@@ -5,6 +5,7 @@ const os = require('os');
 const datShare = require('dat-share');
 const windowStateKeeper = require('electron-window-state');
 const MenuBuilder = require('./menu');
+const packageInfo = require('../package');
 
 let debugOutput = [];
 let mainWindow = null;
@@ -166,6 +167,8 @@ function starWebrecorder() {
     0
   ];
 
+  Object.assign(wrConfig, { dataPath });
+
   console.log(cmdline.toString());
 
   webrecorderProcess = cp.spawn(webrecorderBin, cmdline, spawnOptions);
@@ -244,6 +247,15 @@ app.on('ready', async () => {
     await installExtensions();
   }
 
+  cp.execFile(webrecorderBin, ['--version'], (err, stdout, stderr) => {
+    const electronVersion = `electron ${process.versions.electron}<BR>
+                             chrome ${process.versions.chrome}`;
+    Object.assign(wrConfig, {
+      version: `webrecorder player ${packageInfo.version}<BR>
+                ${stdout.replace(/\n/g, '<BR>')}<BR>${electronVersion}`
+    });
+  });
+
   const dataPath = path.join(
     app.getPath('downloads'),
     'Webrecorder-Data',
@@ -267,7 +279,7 @@ app.on('ready', async () => {
   process.env.INTERNAL_PORT = port;
   process.env.ALLOW_DAT = true;
 
-  const sesh = session.fromPartition('persist:' + username + '-replay', { cache: true });
+  const sesh = session.fromPartition(`persist:${username}-replay`, { cache: true });
   const proxy = `localhost:${port}`;
   sesh.setProxy({ proxyRules: proxy }, () => {
     createWindow();
@@ -277,7 +289,7 @@ app.on('ready', async () => {
 
 // renderer process communication
 ipcMain.on('toggle-proxy', (evt, arg) => {
-  const sesh = session.fromPartition('persist:' +  username, { cache: false });
+  const sesh = session.fromPartition(`persist:${username}`, { cache: false });
 
   let rules;
 
@@ -297,4 +309,11 @@ ipcMain.on('async-call', (evt, arg) => {
   evt.sender.send('async-response', {
     config: wrConfig,
     stdout: debugOutput.join('<BR>').replace(/\n/g, '<BR>')});
+});
+
+
+ipcMain.on('clear-cookies', () => {
+  // get current session
+  const sesh = session.fromPartition(`persist:${username}`);
+  sesh.clearStorageData({ storages: 'cookies' }, () => console.log('cookies cleared !'));
 });
