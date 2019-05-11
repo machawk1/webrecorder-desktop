@@ -5,7 +5,7 @@ const os = require('os');
 const datShare = require('dat-share');
 const windowStateKeeper = require('electron-window-state');
 const MenuBuilder = require('./menu');
-const packageInfo = require('../package');
+const packageInfo = require('./package');
 
 let debugOutput = [];
 let mainWindow = null;
@@ -251,7 +251,7 @@ app.on('ready', async () => {
     const electronVersion = `electron ${process.versions.electron}<BR>
                              chrome ${process.versions.chrome}`;
     Object.assign(wrConfig, {
-      version: `webrecorder player ${packageInfo.version}<BR>
+      version: `Webrecorder Desktop ${packageInfo.version}<BR>
                 ${stdout.replace(/\n/g, '<BR>')}<BR>${electronVersion}`
     });
   });
