@@ -101,7 +101,7 @@
   "dependencies": {
     "dat-node": "^3.5.15",
     "dat-share": "https://github.com/webrecorder/dat-share.git",
-    "electron": "6.0.0",
+    "electron": "11.5.0",
     "electron-debug": "^2.2.0",
     "electron-devtools-installer": "^2.2.4",
     "electron-publisher-s3": "^20.17.2",
